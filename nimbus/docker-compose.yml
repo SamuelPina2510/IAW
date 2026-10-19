@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  apache-backend:
+    build: ./apache
+    container_name: nimbus-apache
+    networks:
+      - nimbus-net
+    volumes:
+      - ./apache/conf/docs-public.conf:/usr/local/apache2/conf/docs-public.conf
+      - ./apache/conf/priv-secure.conf:/usr/local/apache2/conf/priv-secure.conf
+      - ./apache/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./apache/htdocs:/usr/local/apache2/htdocs
+
+  nginx-proxy:
+    image: nginx:latest
+    container_name: nimbus-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+      - "7443:8443"
+    networks:
+      - nimbus-net
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+    depends_on:
+      - apache-backend
+
+networks:
+  nimbus-net:
+    driver: bridge
